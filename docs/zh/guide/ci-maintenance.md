@@ -25,9 +25,11 @@ Windows 还必须开启开发者模式。对于 `NETWORK SERVICE` 等非管理�
 重启 Runner 服务，使新登录令牌带上该权限。workflow 会在安装 Go 工具链之前
 实际创建符号链接来验证这项能力。
 
-Merge Group 代码不得与后续会接收模型凭据的持久 Windows Runner 共用环境。
-因此 Extended CI 的 `merge_group` 使用 `windows-2025`，只有维护者
-`workflow_dispatch` 才会选中可信自托管标签。
+Pull Request 与 Merge Group 代码不得与后续会接收模型凭据的持久 Windows
+Runner 共用环境。因此 Extended CI 的 `pull_request` 和 `merge_group` 使用
+`windows-2025`，只有维护者 `workflow_dispatch` 才会选中可信自托管标签。
+Pull Request 的 Linux Job 使用 `ubuntu-24.04`；可信 Linux Runner 仍只用于
+Merge Group 与维护者手工触发。
 
 ## 稳定检查与 Merge Queue
 
@@ -37,7 +39,7 @@ Ruleset 必须使用下表的 Job 展示名称。`build` 等 Job ID 只是实现
 | --- | --- | --- | --- |
 | CI | `push`、`pull_request`、`merge_group` | `Build & Test`、`E2E Smoke`、`Lint` | — |
 | CodeQL | `push`、`pull_request`、`merge_group`、定时任务 | `Analyze (actions)`、`Analyze (go)`、`Analyze (python)` | — |
-| Extended CI | `merge_group`、手动触发 | `Extended CI Summary` | 其余组件 Job 由 Summary 汇总 |
+| Extended CI | `pull_request`、`merge_group`、手动触发 | `Extended CI Summary` | 其余组件 Job 由 Summary 汇总 |
 | Model E2E | 手动触发 | 不得设为必需检查 | `E2E (none runtime, live models)`、`E2E (OpenSandbox, live model)`、`E2E (none runtime, Windows, live Claude)`、`E2E (Docker runtime, live model)` |
 | Docs | 文档相关的 `push` 和 `pull_request` | 不要设为全局必需；路径过滤会使非文档 PR 没有该检查 | `Build` |
 | Workflow Security | 工作流相关的 `push`、`pull_request`、`merge_group` | 初始基线完成处置前保持可选 | `Zizmor` |

@@ -28,10 +28,12 @@ local security policy so its new logon token includes the privilege. The
 workflow verifies actual symbolic-link creation before installing the Go
 toolchain.
 
-Merge-group code must not run on the same persistent Windows runner that later
-receives model credentials. Extended CI therefore uses `windows-2025` for
-`merge_group` and selects the trusted self-hosted labels only for maintainer
-`workflow_dispatch` runs.
+Pull-request and merge-group code must not run on the same persistent Windows
+runner that later receives model credentials. Extended CI therefore uses
+`windows-2025` for `pull_request` and `merge_group`, and selects the trusted
+self-hosted labels only for maintainer `workflow_dispatch` runs. Its Linux
+pull-request jobs use `ubuntu-24.04`; trusted Linux runners remain reserved for
+merge-group and maintainer-dispatched runs.
 
 ## Stable checks and merge queue
 
@@ -41,7 +43,7 @@ Configure rulesets using the displayed job names below. Job IDs such as `build` 
 | --- | --- | --- | --- |
 | CI | `push`, `pull_request`, `merge_group` | `Build & Test`, `E2E Smoke`, `Lint` | — |
 | CodeQL | `push`, `pull_request`, `merge_group`, schedule | `Analyze (actions)`, `Analyze (go)`, `Analyze (python)` | — |
-| Extended CI | `merge_group`, manual | `Extended CI Summary` | Its component jobs are aggregated by the summary |
+| Extended CI | `pull_request`, `merge_group`, manual | `Extended CI Summary` | Its component jobs are aggregated by the summary |
 | Model E2E | manual | Do not make required | `E2E (none runtime, live models)`, `E2E (OpenSandbox, live model)`, `E2E (none runtime, Windows, live Claude)`, `E2E (Docker runtime, live model)` |
 | Docs | docs-related `push` and `pull_request` | Do not make globally required because path filters can leave it absent | `Build` |
 | Workflow Security | workflow-related `push`, `pull_request`, `merge_group` | Keep optional while the initial baseline is triaged | `Zizmor` |

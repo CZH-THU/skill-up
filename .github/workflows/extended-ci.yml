@@ -3,6 +3,8 @@ name: Extended CI
 # Deterministic, credential-free checks that are suitable for merge-queue
 # gating. Live-model tests live in model-e2e.yml and run only on demand.
 on:
+  pull_request:
+    branches: [main]
   merge_group:
   workflow_dispatch:
 
@@ -15,10 +17,10 @@ permissions: {}
 jobs:
   e2e-windows:
     name: E2E (none runtime, Windows)
-    # Merge-group code stays on an ephemeral runner so it cannot persist hooks
-    # or tools for a later secret-bearing job. Maintainer dispatches exercise
-    # the trusted self-hosted Windows runner.
-    runs-on: ${{ fromJSON(github.event_name == 'merge_group' && '["windows-2025"]' || '["self-hosted","Windows","X64","trusted"]') }}
+    # Pull-request and merge-group code stays on an ephemeral runner so it
+    # cannot persist hooks or tools for a later secret-bearing job. Maintainer
+    # dispatches exercise the trusted self-hosted Windows runner.
+    runs-on: ${{ fromJSON(github.event_name == 'workflow_dispatch' && '["self-hosted","Windows","X64","trusted"]' || '["windows-2025"]') }}
     timeout-minutes: 20
     permissions:
       contents: read
@@ -28,7 +30,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Verify self-hosted Windows prerequisites
+      - name: Verify Windows prerequisites
         shell: powershell
         run: |
           git --version
@@ -65,7 +67,7 @@ jobs:
 
   e2e-docker:
     name: E2E (docker runtime)
-    runs-on: [self-hosted, linux, x64, docker, trusted]
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-24.04"]' || '["self-hosted","linux","x64","docker","trusted"]') }}
     timeout-minutes: 20
     permissions:
       contents: read
@@ -95,7 +97,7 @@ jobs:
 
   release-dryrun:
     name: GoReleaser Check
-    runs-on: [self-hosted, linux, x64, trusted]
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-24.04"]' || '["self-hosted","linux","x64","trusted"]') }}
     timeout-minutes: 15
     permissions:
       contents: read
@@ -131,7 +133,7 @@ jobs:
     name: Extended CI Summary
     if: always()
     needs: [e2e-windows, e2e-docker, release-dryrun]
-    runs-on: [self-hosted, linux, x64, trusted]
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-24.04"]' || '["self-hosted","linux","x64","trusted"]') }}
     timeout-minutes: 5
     permissions: {}
     steps:
